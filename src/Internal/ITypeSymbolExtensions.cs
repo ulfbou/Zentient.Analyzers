@@ -15,26 +15,6 @@ namespace Zentient.Analyzers.Internal
     internal static class ITypeSymbolExtensions
     {
         /// <summary>
-        /// Determines whether the specified type implements any of the well-known immutable abstractions.
-        /// </summary>
-        /// <param name="type">The type symbol to check.</param>
-        /// <returns>
-        /// <c>true</c> if the type implements any immutable abstraction; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsImmutableAbstraction(this INamedTypeSymbol type)
-            => WellKnown.ImplementsAnyOf(type, WellKnown.ImmutableAbstractions.ToArray());
-
-        /// <summary>
-        /// Determines whether the specified type is a validation context.
-        /// </summary>
-        /// <param name="type">The type symbol to check.</param>
-        /// <returns>
-        /// <c>true</c> if the type is a validation context; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsValidationContext(this INamedTypeSymbol type)
-            => type.ToDisplayString() == WellKnown.IValidationContext;
-
-        /// <summary>
         /// Determines whether the <paramref name="fromType"/> is assignable to the <paramref name="toType"/>.
         /// </summary>
         /// <param name="fromType">The source type symbol.</param>

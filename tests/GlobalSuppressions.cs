@@ -5,5 +5,5 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is a test project for analyzers.", Scope = "namespace", Target = "~N:Zentient.Analyzers.Tests.*")]
+[assembly: SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is a test project for analyzers", Scope = "namespace", Target = "~N:Zentient.Analyzers.Tests.*")]
 //Scope = "member", Target = "~M:Zentient.Analyzers.Tests.ZNT0001ResultComplianceAnalyzerTests.OkResult_Complies_NoDiagnostics~System.Threading.Tasks.Task")]

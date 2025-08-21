@@ -44,5 +44,23 @@ namespace Zentient.Analyzers
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true,
             description: "Ensures that types lacking a dedicated builder are created through controlled, static factory methods, promoting immutability and encapsulation.");
+
+        public static DiagnosticDescriptor ZNT1002A_NoIsSuccessSetter = new(
+            id: "ZNT1002A",
+            title: "IsSuccess must be a derived, computed property without a setter",
+            messageFormat: "The IsSuccess property on type '{0}' must not contain a setter",
+            category: ImmutabilityCategory,
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "The IsSuccess property is a reflection of the Errors collection's state and should not be independently mutable.");
+
+        public static DiagnosticDescriptor ZNT1002B_IsSuccessDerivedFromErrors = new(
+            id: "ZNT1002B",
+            title: "IsSuccess must be derived from the Errors collection",
+            messageFormat: "The IsSuccess property on type '{0}' must be a computed property derived from the state of the Errors collection",
+            category: ImmutabilityCategory,
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: "Ensures consistency by preventing a mismatch between the result's success state and the presence of errors.");
     }
 }

@@ -20,7 +20,7 @@ namespace Zentient.Analyzers.Tests.Diagnostics.Immutability
     /// <summary>
     /// Contains a complete set of tests for the ZNT1001ImmutabilityAnalyzer.
     /// </summary>
-    public class ZNT1001ImmutabilityAnalyzerTests : Verifier<ZNT1001ImmutabilityAnalyzer>
+    public class ImmutabilityAnalyzerTests : Verifier<ImmutabilityAnalyzer>
     {
         // Case 1: ZNT1001A - Concrete Type Must Be Sealed
         [Fact]
@@ -192,6 +192,37 @@ public sealed class CompliantValidationContext : Zentient.Abstractions.Validatio
 }
 ";
             await VerifyAnalyzerAsync(testCode);
+        }
+
+        [Fact]
+        public async Task IsSuccessPropertyWithSetterReportsDiagnostic()
+        {
+            var testCode = @"
+using System.Collections.Generic;
+using Zentient.Abstractions.Results;
+using Zentient.Abstractions.Errors;
+using Zentient.Abstractions.Errors.Definitions;
+public sealed class NonCompliantResult : IResult {
+    private NonCompliantResult() { }
+    public bool IsSuccess { get; set; }
+    public IReadOnlyList<string> Messages { get; } = new List<string>();
+    public IEnumerable<IErrorInfo<IErrorDefinition>> Errors { get; } = new List<IErrorInfo<IErrorDefinition>>();
+}
+";
+
+            var expected1 = Diagnostic(Descriptors.ZNT1001B_PropertiesMustBeGetOnly)
+                .WithLocation(8, 17)
+                .WithArguments("IsSuccess", "NonCompliantResult");
+
+            var expected2 = Diagnostic(Descriptors.ZNT1002A_NoIsSuccessSetter)
+                .WithLocation(8, 17)
+                .WithArguments("NonCompliantResult");
+
+            var expected3 = Diagnostic(Descriptors.ZNT1002B_IsSuccessDerivedFromErrors)
+                .WithLocation(8, 17)
+                .WithArguments("NonCompliantResult");
+
+            await VerifyAnalyzerAsync(testCode, expected1, expected2, expected3);
         }
     }
 }
