@@ -57,6 +57,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zentient.Analyzers.Tests", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F2F1A9CD-3734-4AF7-AF90-06BB83E21ECD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{E22DF3B7-D053-40BD-B119-8EA9769C69B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{AE289ADD-CE77-4572-952A-9A89A31259AF}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci-cd.yml = .github\workflows\ci-cd.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +105,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4856479D-B2F4-4706-82A0-FA3DAE1A5F2D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{890A2A52-8776-4DDE-B863-47F1984067BC} = {F2F1A9CD-3734-4AF7-AF90-06BB83E21ECD}
+		{AE289ADD-CE77-4572-952A-9A89A31259AF} = {E22DF3B7-D053-40BD-B119-8EA9769C69B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11111111-2222-3333-4444-555555555555}
