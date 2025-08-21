@@ -6,6 +6,8 @@
     <AssemblyName>Zentient.Analyzers</AssemblyName>
     <Version>1.0.0</Version>
     <Description>Roslyn analyzer enforcing XML docs on public methods</Description>
+    <Authors>Ulf Bourelius</Authors>
+    <PackageAuthors>Ulf Bourelius</PackageAuthors>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,9 +9,9 @@
     <Error Text="PackageVersion must be specified for packable projects" 
            Condition="'$(PackageVersion)' == ''" />
     <Error Text="PackageDescription must be specified for packable projects" 
-           Condition="'$(PackageDescription)' == '' OR '$(PackageDescription)' == 'A Zentient framework library'" />
+           Condition="'$(PackageDescription)' == ''" />
     <Error Text="PackageAuthors must be specified for packable projects" 
-           Condition="'$(PackageAuthors)' == '' OR '$(PackageAuthors)' == 'Ulf Bourelius'" />
+           Condition="'$(PackageAuthors)' == ''" />
     
     <!-- Validate licensing -->
     <Warning Text="Package license should be specified (PackageLicenseExpression or PackageLicenseFile)" 
@@ -19,7 +19,7 @@
     
     <!-- Validate URLs -->
     <Warning Text="PackageProjectUrl should be specified for better discoverability" 
-             Condition="'$(PackageProjectUrl)' == '' OR '$(PackageProjectUrl)' == 'https://github.com/ulfbou/Zentient.Analyzers.git'" />
+             Condition="'$(PackageProjectUrl)' == ''" />
     
     <!-- Validate documentation -->
     <Warning Text="README.md not found - consider adding package documentation" 
