@@ -20,12 +20,10 @@ namespace Zentient.Analyzers.Diagnostics.Immutability
     public sealed class ImmutabilityAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
-            Descriptors.ZNT1001A_ConcreteTypeMustBeSealed,
-            Descriptors.ZNT1001B_PropertiesMustBeGetOnly,
-            Descriptors.ZNT1001C_NoPublicConstructors,
-            Descriptors.ZNT1001D_MustHaveStaticFabricMethods,
-            Descriptors.ZNT1002A_NoIsSuccessSetter,
-            Descriptors.ZNT1002B_IsSuccessDerivedFromErrors
+            Descriptors.ZNT0006ConcreteTypeMustBeSealed,
+            Descriptors.ZNT0007PropertiesMustBeGetOnly,
+            Descriptors.ZNT0008NoPublicOrInternalConstructors,
+            Descriptors.ZNT0009MustHaveStaticFactoryMethods
         );
 
         public override void Initialize(AnalysisContext context)
@@ -37,108 +35,113 @@ namespace Zentient.Analyzers.Diagnostics.Immutability
 
         private static void AnalyzeType(SymbolAnalysisContext ctx)
         {
-            if (ctx.Symbol is not INamedTypeSymbol type || type.TypeKind != TypeKind.Class || type.IsAbstract)
+            if (ctx.Symbol is not INamedTypeSymbol type || type.TypeKind != TypeKind.Class)
             {
                 return;
             }
 
-            // Check if the type is a target for our immutability rules.
-            // This includes both general immutable abstractions and the specific IValidationContext.
-            if (!type.IsImmutableAbstraction())
+            // The analyzer should only apply to non-abstract immutable types.
+            if (!type.IsImmutableAbstraction() || type.IsAbstract)
             {
                 return;
             }
 
-            // ZNT1001A: Concrete type must be sealed.
+            // ZNT0006: Concrete type must be sealed
             if (!type.IsSealed)
             {
                 ctx.ReportDiagnostic(Diagnostic.Create(
-                    Descriptors.ZNT1001A_ConcreteTypeMustBeSealed,
+                    Descriptors.ZNT0006ConcreteTypeMustBeSealed,
                     type.Locations[0],
                     type.Name));
             }
 
-            // ZNT1001B: Properties must be get-only.
-            foreach (var prop in type.GetMembers().OfType<IPropertySymbol>())
-            {
-                if (prop.SetMethod is not null && (prop.SetMethod.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal))
-                {
-                    ctx.ReportDiagnostic(Diagnostic.Create(
-                        Descriptors.ZNT1001B_PropertiesMustBeGetOnly,
-                        prop.Locations[0],
-                        prop.Name,
-                        type.Name));
-                }
-            }
+            // ZNT0007: Properties must be get-only
+            AnalyzeGetOnlyProperties(ctx, type);
 
-            // ZNT1001C: No public or internal constructors.
-            foreach (var ctor in type.Constructors)
+            // ZNT0008: No public or internal constructors
+            AnalyzeConstructors(ctx, type);
+
+            // ZNT0009: Must have static factory method for IValidationContext
+            if (type.Implements(WellKnown.IValidationContext))
+            {
+                AnalyzeValidationContextFactoryMethod(ctx, type);
+            }
+        }
+
+        private static void AnalyzeGetOnlyProperties(SymbolAnalysisContext ctx, INamedTypeSymbol type)
+        {
+            var publicPropertiesWithSetter = type.GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(p =>
+                    p.DeclaredAccessibility == Accessibility.Public &&
+                    p.SetMethod != null &&
+                    p.SetMethod.DeclaredAccessibility != Accessibility.Private)
+                .ToList();
+
+            foreach (var property in publicPropertiesWithSetter)
+            {
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    Descriptors.ZNT0007PropertiesMustBeGetOnly,
+                    property.Locations[0],
+                    property.Name,
+                    type.Name));
+            }
+        }
+
+        private static void AnalyzeConstructors(SymbolAnalysisContext ctx, INamedTypeSymbol type)
+        {
+            var constructors = type.Constructors;
+            foreach (var ctor in constructors)
             {
                 if (ctor.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
                 {
                     ctx.ReportDiagnostic(Diagnostic.Create(
-                        Descriptors.ZNT1001C_NoPublicConstructors,
+                        Descriptors.ZNT0008NoPublicOrInternalConstructors,
                         ctor.Locations[0],
                         type.Name));
                 }
             }
+        }
 
-            // ZNT1001D: Must have a static factory method (only for IValidationContext).
-            if (type.IsValidationContext())
+        private static void AnalyzeValidationContextFactoryMethod(SymbolAnalysisContext ctx, INamedTypeSymbol type)
+        {
+            // Check if the type has any public static methods
+            var hasPublicStaticMethod = type.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Any(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public);
+
+            if (!hasPublicStaticMethod)
             {
-                var hasFactoryMethod = type.GetMembers().OfType<IMethodSymbol>()
-                    .Any(m => m.IsStatic && m.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal && m.ReturnType is not null && type.IsAssignableTo(m.ReturnType));
-
-                if (!hasFactoryMethod)
-                {
-                    ctx.ReportDiagnostic(Diagnostic.Create(
-                        Descriptors.ZNT1001D_MustHaveStaticFabricMethods,
-                        type.Locations[0],
-                        type.Name));
-                }
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    Descriptors.ZNT0009MustHaveStaticFactoryMethods,
+                    type.Locations[0],
+                    type.Name));
+                return;
             }
 
-            // ZNT1002: IsSuccess property checks (only for types implementing IResult).
-            if (type.IsResultAbstraction())
+            // Now, check if any of these public static methods are valid factory methods
+            var validationContextType = ctx.Compilation.GetTypeByMetadataName(WellKnown.IValidationContext);
+
+            if (validationContextType is null)
             {
-                var isSuccessProperty = type.GetMembers("IsSuccess").OfType<IPropertySymbol>().FirstOrDefault();
-                var errorsProperty = type.GetMembers("Errors").OfType<IPropertySymbol>().FirstOrDefault();
+                // If the IValidationContext type is not found, we cannot perform this check.
+                // It's a valid scenario, so we simply return without reporting a diagnostic.
+                return;
+            }
 
-                if (isSuccessProperty is not null && errorsProperty is not null)
-                {
-                    // ZNT1002A: The IsSuccess property must not have a setter.
-                    if (isSuccessProperty.SetMethod is not null && (isSuccessProperty.SetMethod.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal))
-                    {
-                        ctx.ReportDiagnostic(Diagnostic.Create(
-                            Descriptors.ZNT1002A_NoIsSuccessSetter,
-                            isSuccessProperty.Locations[0],
-                            type.Name));
-                    }
+            var hasValidFactoryMethod = type.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Any(m => m.IsStatic &&
+                          m.DeclaredAccessibility == Accessibility.Public &&
+                          (m.ReturnType.Equals(type, SymbolEqualityComparer.Default) ||
+                           m.ReturnType.IsAssignableTo(validationContextType)));
 
-                    // ZNT1002B: The IsSuccess property must be derived from the Errors collection.
-                    var hasBackingField = isSuccessProperty.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
-
-                    if (hasBackingField)
-                    {
-                        ctx.ReportDiagnostic(Diagnostic.Create(
-                           Descriptors.ZNT1002B_IsSuccessDerivedFromErrors,
-                           isSuccessProperty.Locations[0],
-                           type.Name));
-                    }
-                    else if (isSuccessProperty.GetMethod?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() is AccessorDeclarationSyntax accessor)
-                    {
-                        // A more robust check: does the getter reference the Errors property?
-                        SyntaxNode? syntax = accessor.Body ?? (SyntaxNode?)accessor.ExpressionBody;
-
-                        if (syntax is null || !syntax.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>().Any(id => id.Identifier.Text == errorsProperty.Name))
-                        {
-                            ctx.ReportDiagnostic(Diagnostic.Create(
-                                Descriptors.ZNT1002B_IsSuccessDerivedFromErrors,
-                                isSuccessProperty.Locations[0],
-                                type.Name));
-                        }
-                    }
-                }
+            if (!hasValidFactoryMethod)
+            {
+                ctx.ReportDiagnostic(Diagnostic.Create(
+                    Descriptors.ZNT0009MustHaveStaticFactoryMethods,
+                    type.Locations[0],
+                    type.Name));
             }
         }
     }
