@@ -5,6 +5,7 @@
 
 using Microsoft.CodeAnalysis;
 
+using Zentient.Analyzers.Diagnostics;
 using Zentient.Analyzers.Diagnostics.Immutability;
 
 namespace Zentient.Analyzers.Internal
