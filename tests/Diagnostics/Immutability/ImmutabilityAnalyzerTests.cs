@@ -19,6 +19,7 @@ using Zentient.Abstractions.Validation;
 using Zentient.Abstractions.Validation.Definitions;
 using Zentient.Analyzers.Diagnostics;
 using Zentient.Analyzers.Diagnostics.Immutability;
+using Zentient.Analyzers.Templates;
 using Zentient.Analyzers.Tests.Internal;
 
 namespace Zentient.Analyzers.Tests.Diagnostics.Immutability
@@ -29,8 +30,26 @@ namespace Zentient.Analyzers.Tests.Diagnostics.Immutability
     public class ImmutabilityAnalyzerTests : Verifier<ImmutabilityAnalyzer>
     {
         // ZNT0006: Concrete type must be sealed
+        // In ImmutabilityAnalyzerTests.cs
+
         [Fact]
         public async Task ReportsDiagnosticWhenTypeIsNotSealed()
+        {
+            // Arrange
+            var testCode = new ResultsTemplateBuilder()
+                .AddCompliant("Result")
+                .WithMutation(code => code.Replace("sealed class Result", "class NonSealedResult"))
+                .Build();
+
+            // Act & Assert
+            var expected = Diagnostic(Descriptors.ZNT0006ConcreteTypeMustBeSealed)
+                .WithLocation((testCode?.IndexOf("class NonSealedResult") ?? 0) + 6, 14)
+                .WithArguments("NonSealedResult");
+
+            await VerifyAnalyzerAsync(testCode, expected);
+        }
+        [Fact]
+        public async Task OldReportsDiagnosticWhenTypeIsNotSealed()
         {
             var testCode = @"
 using System.Collections.Generic;

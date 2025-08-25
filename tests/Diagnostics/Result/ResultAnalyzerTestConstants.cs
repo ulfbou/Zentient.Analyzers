@@ -29,8 +29,10 @@ using Zentient.Abstractions.Results;
         public const string EnvelopeUsings = @"
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
 using System.Diagnostics.CodeAnalysis;
 using Zentient.Abstractions.Codes;
 using Zentient.Abstractions.Codes.Definitions;
@@ -64,12 +66,16 @@ public sealed class {0} : IResult
 }
 ";
 
-        public const string MissingValueForGeneric = BaseUsings + @"
-public sealed class {0} : IResult<int>
+        public const string ResultWithValue = BaseUsings + @"
+public sealed class  {0} : IResult<int>
 {
-    public IReadOnlyCollection<string> Messages { get; } = new List<string>();
+    public IReadOnlyList<string> Messages => Array.Empty<string>();
     public IEnumerable<IErrorInfo<IErrorDefinition>> Errors { get; } = new List<IErrorInfo<IErrorDefinition>>();
-    public bool IsSuccess => true;
+    public bool IsSuccess => Errors?.Count() == 0;
+    public int Value {get;} = 0;
+    public string? ErrorMessage => Errors.FirstOrDefault()?.Message;
+    private {0}() { }
+    public static IResult<int> Create() => new {0}();
 }
 ";
 
@@ -241,18 +247,17 @@ public sealed class {0} : IStreamableEnvelope<ICodeDefinition, IErrorDefinition,
         public const string FullyCompliantEnvelopeBase = EnvelopeUsings + @"
 public sealed class {0} : IStreamableEnvelope<ICodeDefinition, IErrorDefinition, int>, IHeaderedEnvelope<ICodeDefinition, IErrorDefinition, int>
 {
-    public int Value { get; } = 0;
-    public bool IsSuccess => Errors?.Count == 0;
-    public IReadOnlyCollection<string> Messages { get; } = Array.Empty<string>();
-    public IReadOnlyList<IErrorInfo<IErrorDefinition>> Errors { get; } = Array.Empty<IErrorInfo<IErrorDefinition>>();
-    public ICode<ICodeDefinition> Code { get; } = null!;
-    public Stream Stream { get; } = null!;
-    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Headers { get; } = Array.Empty<KeyValuePair<string, IReadOnlyCollection<string>>>().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-    public IMetadata Metadata { get; } = null!;
+public int Value { get; } = 0;
+public bool IsSuccess => Errors?.Count == 0;
+public IReadOnlyCollection<string> Messages { get; } = Array.Empty<string>();
+public IReadOnlyList<IErrorInfo<IErrorDefinition>> Errors { get; } = Array.Empty<IErrorInfo<IErrorDefinition>>();
+public ICode<ICodeDefinition> Code { get; } = null!;
+public Stream Stream { get; } = null!;
+public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Headers { get; } = Array.Empty<KeyValuePair<string, IReadOnlyCollection<string>>>().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+public IMetadata Metadata { get; } = null!;
 
-    private {0}() {} // Required for compilation
-
-    public static {0} Create() => new {0}(); // Required for compilation
+private {0}() { }
+public static {0} Create () => new {0}();
 }
 ";
 

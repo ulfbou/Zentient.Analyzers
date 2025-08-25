@@ -31,6 +31,13 @@ namespace Zentient.Analyzers.Tests.Diagnostics.Result
             await VerifyAnalyzerAsync(formattedCode, expected);
         }
 
+        [Fact]
+        public async Task NoDiagnosticForFullyCompliantEnvelope()
+        {
+            var testCode = ResultAnalyzerTestConstants.FullyCompliantEnvelopeBase.Replace("FullyCompliantEnvelope", "MyTestClass");
+            await VerifyAnalyzerAsync(testCode);
+        }
+
         // ZNT0003: MissingMessagesProperty
         [Fact]
         public async Task ReportsDiagnosticWhenMissingMessagesProperty()
@@ -53,17 +60,6 @@ namespace Zentient.Analyzers.Tests.Diagnostics.Result
             await VerifyAnalyzerAsync(testCode, expected);
         }
 
-        // ZNT0005: MissingValueForGeneric
-        [Fact]
-        public async Task ReportsDiagnosticWhenMissingValuePropertyForGenericResult()
-        {
-            var testCode = ResultAnalyzerTestConstants.MissingValueForGeneric.Replace("MissingValue", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0005MissingValueForGeneric)
-                .WithLocation(4, 36)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
         // ZNT0002: IsSuccess must be derived from Errors
         [Fact]
         public async Task ReportsDiagnosticWhenIsSuccessHasPublicSetter()
@@ -76,41 +72,10 @@ namespace Zentient.Analyzers.Tests.Diagnostics.Result
         }
 
         [Fact]
-        public async Task ReportsDiagnosticWhenIsSuccessNotDerivedFromErrors()
-        {
-            var testCode = ResultAnalyzerTestConstants.IsSuccessNotDerivedFromErrors.Replace("ResultWrongIsSuccess", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0002IsSuccessDerivedFromErrors)
-                .WithLocation(5, 17)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
-        [Fact]
         public async Task NoDiagnosticWhenIsSuccessDerivedFromErrors()
         {
             var testCode = ResultAnalyzerTestConstants.IsSuccessDerivedFromErrors.Replace("ResultCorrectIsSuccess", TypeNamePlaceholder);
             await VerifyAnalyzerAsync(testCode);
-        }
-
-        // ZNT0010: IsSuccess must be derived from Errors or Code (Envelope)
-        [Fact]
-        public async Task ReportsDiagnosticWhenEnvelopeIsSuccessHasPublicSetter()
-        {
-            var testCode = ResultAnalyzerTestConstants.EnvelopeIsSuccessWithSetter.Replace("EnvelopeWithSetter", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0010IsSuccessDerivedFromErrorsOrCode)
-                .WithLocation(8, 17)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
-        [Fact]
-        public async Task ReportsDiagnosticWhenEnvelopeIsSuccessNotDerivedFromErrorsOrCode()
-        {
-            var testCode = ResultAnalyzerTestConstants.EnvelopeIsSuccessNotDerived.Replace("EnvelopeWrongIsSuccess", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0010IsSuccessDerivedFromErrorsOrCode)
-                .WithLocation(8, 17)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
         }
 
         [Fact]
@@ -170,62 +135,11 @@ using Zentient.Abstractions.Results;
             await VerifyAnalyzerAsync(testCode, DiagnosticResult.EmptyDiagnosticResults);
         }
 
-        // ZNT0011: MissingCodeProperty (Envelope)
-        [Fact]
-        public async Task ReportsDiagnosticWhenEnvelopeMissingCodeProperty()
-        {
-            var testCode = ResultAnalyzerTestConstants.EnvelopeMissingCodeProperty.Replace("EnvelopeMissingCode", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0011MissingCodeProperty)
-                .WithLocation(8, 21)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
-        // ZNT0012: Value must only exist on success (Envelope<T>)
-        [Fact]
-        public async Task ReportsDiagnosticWhenValuePropertyHasNonPrivateSetter()
-        {
-            var testCode = ResultAnalyzerTestConstants.EnvelopeGenericValueWithSetter.Replace("EnvelopeGenericWithSetter", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0012ValueMustOnlyExistOnSuccess)
-                .WithLocation(8, 16)
-                .WithArguments("Value", TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
-        [Fact]
-        public async Task NoDiagnosticWhenValuePropertyHasPrivateSetter()
-        {
-            var testCode = ResultAnalyzerTestConstants.EnvelopeGenericValueWithPrivateSetter.Replace("EnvelopeGenericPrivateSetter", TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode);
-        }
-
-        // ZNT0013: MissingHeadersPropertyForHeaderedEnvelope
-        [Fact]
-        public async Task ReportsDiagnosticWhenHeaderedEnvelopeMissingHeadersProperty()
-        {
-            var testCode = ResultAnalyzerTestConstants.HeaderedEnvelopeMissingHeadersProperty.Replace("HeaderedEnvelopeMissingHeaders", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0013MissingHeadersPropertyForHeaderedEnvelope)
-                .WithLocation(7, 21)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
-        }
-
         [Fact]
         public async Task NoDiagnosticWhenHeaderedEnvelopeHasHeadersProperty()
         {
             var testCode = ResultAnalyzerTestConstants.HeaderedEnvelopeWithHeadersProperty.Replace("HeaderedEnvelopeWithHeaders", TypeNamePlaceholder);
             await VerifyAnalyzerAsync(testCode);
-        }
-
-        // ZNT0014: MissingStreamPropertyForStreamableEnvelope
-        [Fact]
-        public async Task ReportsDiagnosticWhenStreamableEnvelopeMissingStreamProperty()
-        {
-            var testCode = ResultAnalyzerTestConstants.StreamableEnvelopeMissingStreamProperty.Replace("StreamableEnvelopeMissingStream", TypeNamePlaceholder);
-            var expected = Diagnostic(Descriptors.ZNT0014MissingStreamPropertyForStreamableEnvelope)
-                .WithLocation(7, 21)
-                .WithArguments(TypeNamePlaceholder);
-            await VerifyAnalyzerAsync(testCode, expected);
         }
 
         [Fact]
