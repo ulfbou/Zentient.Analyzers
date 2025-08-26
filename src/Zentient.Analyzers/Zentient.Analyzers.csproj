@@ -13,6 +13,7 @@
     <PackageAuthors Condition="'$(PackageAuthors)' == ''">$(Authors)</PackageAuthors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/ulfbou/Zentient.Analyzers</PackageProjectUrl>
+    <NoWarn>$(NoWarn);RS1038;NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="..\..\Directory.Analyzer.props" />
