@@ -1,0 +1,23 @@
+<!-- Zentient.Analyzers.Analyzers Project File -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Zentient.Analyzers</AssemblyName>
+    <Version>1.0.0</Version>
+    <Description>Roslyn analyzer enforcing XML docs on public methods</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <AssemblyName>Zentient.Analyzers</AssemblyName>
+    <PackageId>Zentient.Analyzers</PackageId>  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors Condition="'$(Authors)' == ''">Ulf Bourelius</Authors>
+    <PackageAuthors Condition="'$(PackageAuthors)' == ''">$(Authors)</PackageAuthors>
+  </PropertyGroup>
+
+  <Import Project="..\..\Directory.Analyzer.props" />
+  <Import Project="..\..\Directory.Analyzer.targets" />
+
+</Project>
