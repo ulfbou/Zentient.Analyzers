@@ -5,7 +5,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Zentient.Analyzers
+namespace Zentient.Analyzers.Helpers
 {
     public static class SymbolExtensions
     {

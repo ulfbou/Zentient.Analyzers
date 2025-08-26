@@ -10,7 +10,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Zentient.Analyzers
+using Zentient.Analyzers.Diagnostics;
+
+namespace Zentient.Analyzers.TemplateCompilation
 {
     /// <summary>
     /// Scaffold: emits an error if the compilation already contains any C# diagnostics

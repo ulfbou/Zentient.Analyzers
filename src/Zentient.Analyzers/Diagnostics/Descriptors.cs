@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 using System.Collections.Immutable;
 
-namespace Zentient.Analyzers
+namespace Zentient.Analyzers.Diagnostics
 {
     internal static class Descriptors
     {

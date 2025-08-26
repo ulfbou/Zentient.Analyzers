@@ -12,7 +12,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Zentient.Analyzers
+using Zentient.Analyzers.Diagnostics;
+using Zentient.Analyzers.Helpers;
+
+namespace Zentient.Analyzers.ContractFidelity
 {
     /// <summary>
     /// Enforces that any class marked with [ZentientStub(typeof(IMyContract))]
@@ -50,7 +53,7 @@ namespace Zentient.Analyzers
 
             if (!classSymbol.TryGetAttributeCtorArg(StubAttributeMetadataName, out TypedConstant ctorArg))
             {
-                return; // not a stub
+                return;
             }
 
             if (!(ctorArg.Value is INamedTypeSymbol targetInterface) || targetInterface.TypeKind != TypeKind.Interface)

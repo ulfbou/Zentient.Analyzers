@@ -10,12 +10,12 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 using System.Threading.Tasks;
 
-namespace Zentient.Analyzers.Testing
+namespace Zentient.Analyzers.Testing.Verification
 {
-    public static class AnalyzerVerifier<TAnalyzer>
-        where TAnalyzer : DiagnosticAnalyzer, new()
+    public static class AnalyzerVerifier
     {
-        public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
+        public static async Task VerifyAnalyzerAsync<TAnalyzer>(string source, params DiagnosticResult[] expected)
+            where TAnalyzer : DiagnosticAnalyzer, new()
         {
             var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
             {
@@ -23,9 +23,7 @@ namespace Zentient.Analyzers.Testing
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
             };
 
-            // Add a minimal Abstractions with the attribute so the analyzer can bind
             test.TestState.Sources.Add("namespace Zentient.Abstractions { public sealed class ZentientStubAttribute : System.Attribute { public ZentientStubAttribute(System.Type t) {} } }");
-
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync();
         }
