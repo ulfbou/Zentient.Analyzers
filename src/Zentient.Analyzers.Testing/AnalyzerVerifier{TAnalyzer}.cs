@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
+
 using System.Threading.Tasks;
 
 namespace Zentient.Analyzers.Testing
@@ -16,7 +17,7 @@ namespace Zentient.Analyzers.Testing
     {
         public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
-            var test = new CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
+            var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
             {
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,

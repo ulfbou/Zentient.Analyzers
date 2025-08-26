@@ -4,6 +4,7 @@
 // </copyright>
 
 using Microsoft.CodeAnalysis;
+
 using System.Collections.Immutable;
 
 namespace Zentient.Analyzers
@@ -37,6 +38,7 @@ namespace Zentient.Analyzers
             messageFormat: "Generated template produced compiler error: {0}",
             category: "TemplateCompilation",
             defaultSeverity: DiagnosticSeverity.Error,
-            isEnabledByDefault: true);
+            isEnabledByDefault: true,
+            customTags: WellKnownDiagnosticTags.CompilationEnd); // FIX: Added CompilationEnd custom tag
     }
 }

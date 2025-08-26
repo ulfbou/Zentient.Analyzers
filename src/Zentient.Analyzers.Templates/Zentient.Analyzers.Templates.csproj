@@ -1,23 +1,30 @@
-<!-- Zentient.Analyzers.Analyzers Project File -->
+<!-- Zentient.Analyzers.Templates Project File -->
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Zentient.Analyzers</AssemblyName>
+    <AssemblyName>Zentient.Analyzers.Templates</AssemblyName>
     <Version>1.0.0</Version>
     <Description>Roslyn analyzer enforcing XML docs on public methods</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <AssemblyName>Zentient.Analyzers</AssemblyName>
-    <PackageId>Zentient.Analyzers</PackageId>  </PropertyGroup>
+    <PackageId>Zentient.Analyzers.Templates</PackageId>
+  </PropertyGroup>
 
   <PropertyGroup>
     <Authors Condition="'$(Authors)' == ''">Ulf Bourelius</Authors>
     <PackageAuthors Condition="'$(PackageAuthors)' == ''">$(Authors)</PackageAuthors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/ulfbou/Zentient.Analyzers</PackageProjectUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />
+
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.8" />
+  </ItemGroup>
 
   <Import Project="..\..\Directory.Analyzer.props" />
   <Import Project="..\..\Directory.Analyzer.targets" />
-
 </Project>
