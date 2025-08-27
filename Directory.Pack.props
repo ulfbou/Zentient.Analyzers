@@ -2,6 +2,7 @@
 
   <!-- NuGet Package Configuration -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    
     <!-- Package metadata -->
     <PackageId Condition="'$(PackageId)' == ''">$(AssemblyName)</PackageId>
     <PackageVersion Condition="'$(PackageVersion)' == ''">$(Version)</PackageVersion>
