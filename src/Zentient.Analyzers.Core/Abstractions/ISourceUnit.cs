@@ -12,22 +12,22 @@ namespace Zentient.Analyzers.Abstractions
         /// <summary>
         /// Gets the source code content.
         /// </summary>
-        string Content { get; init; }
+        string Content { get; }
 
         /// <summary>
         /// Gets the fingerprint of the source unit.
         /// </summary>
-        string Fingerprint { get; init; }
+        string Fingerprint { get; }
 
         /// <summary>
         /// Gets the name of the source unit.
         /// </summary>
-        string Name { get; init; }
+        string Name { get; }
 
         /// <summary>
         /// Gets the provenance information for the source unit.
         /// </summary>
-        string Provenance { get; init; }
+        string Provenance { get; }
 
         /// <summary>
         /// Deconstructs the source unit into its components.

@@ -11,11 +11,18 @@ using Zentient.Analyzers.Abstractions;
 
 namespace Zentient.Analyzers.Registry
 {
+    /// <summary>
+    /// Implements <see cref="IRegistry"/> to provide access to registered stubs and templates.
+    /// </summary>
     internal sealed class Registry : IRegistry
     {
         private readonly ImmutableDictionary<string, IStubInstructions> _stubs;
         private readonly ImmutableDictionary<string, ITemplateInstructions> _templates;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Registry"/> class.
+        /// </summary>
+        /// <param name="instrs">The instructions to register.</param>
         public Registry(ImmutableArray<ICodeInstructions> instrs)
         {
             _stubs = instrs.OfType<IStubInstructions>().ToImmutableDictionary(x => x.Key);

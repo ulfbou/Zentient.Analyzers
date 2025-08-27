@@ -22,8 +22,8 @@ namespace Zentient.Analyzers.Abstractions
         /// <summary>
         /// Builds source units from the specified seeds.
         /// </summary>
-        /// <param name="seeds">The collection of seed keys to build from.</param>
+        /// <param name="instructionKeys">The collection of seed keys to build from.</param>
         /// <returns>A read-only list of generated <see cref="ISourceUnit"/> instances.</returns>
-        IReadOnlyList<ISourceUnit> Build(IEnumerable<string> seeds);
+        IReadOnlyList<ISourceUnit> Build(IEnumerable<string> instructionKeys);
     }
 }
