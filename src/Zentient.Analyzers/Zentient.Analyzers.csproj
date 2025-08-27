@@ -3,13 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Zentient.Analyzers</AssemblyName>
+    <RootNamespace>Zentient.Analyzers</RootNamespace>
     <Version>1.0.0</Version>
     <Description>Roslyn analyzer enforcing XML docs on public methods</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageId>Zentient.Analyzers</PackageId>
-    <Authors Condition="'$(Authors)' == ''">Ulf Bourelius</Authors>
+    <Authors>Ulf Bourelius</Authors>
     <PackageAuthors Condition="'$(PackageAuthors)' == ''">$(Authors)</PackageAuthors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/ulfbou/Zentient.Analyzers</PackageProjectUrl>
