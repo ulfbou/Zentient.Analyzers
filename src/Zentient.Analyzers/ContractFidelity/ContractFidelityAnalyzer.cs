@@ -1,8 +1,6 @@
-// ========== src/Zentient.Analyzers/ContractFidelityAnalyzer.cs ===================
-// <copyright file="ContractFidelityAnalyzer.cs" author="Ulf Bourelius">
+// <copyright file="src/Zentient.Analyzers/ContractFidelityAnalyzer.cs" author="Ulf Bourelius">
 // Copyright (c) 2025 Ulf Bourelius. All rights reserved. MIT License. See LICENSE in the project root for license information.
 // </copyright>
-// ========================================================
 
 using System.Collections.Immutable;
 using System.Linq;
