@@ -1,122 +1,173 @@
-// <copyright file="src/Zentient.Analyzers.Core/Engine/BuildEngine.cs" author="Ulf Bourelius">
+// <copyright file="src/Zentient.Analyzers/Engine/BuildEngine.cs" author="Ulf Bourelius">
 // Copyright (c) 2025 Ulf Bourelius. All rights reserved. MIT License. See LICENSE in the project root for license information.
 // </copyright>
 
-using Zentient.Analyzers.Abstractions;
-using Zentient.Analyzers.Registry;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+
+using Zentient.Analyzers.Abstractions;
+using Zentient.Analyzers.Extensions;
+using Zentient.Analyzers.Registry;
 
 namespace Zentient.Analyzers.Engine
 {
+    using System.Collections.Immutable;
+
+    using Zentient.Analyzers.Abstractions;
+    using Zentient.Analyzers.Extensions;
+    using Zentient.Analyzers.Registry;
+
     /// <summary>
-    /// Implements <see cref="IBuildEngine"/> to generate source units from instruction keys.
+    /// Generates <see cref="ISourceUnit"/> instances from registered <see cref="ICodeInstructions"/>
+    /// using a robust topological sort (Kahn's algorithm) and safe event dispatch.
     /// </summary>
     public sealed class BuildEngine : IBuildEngine
     {
         private readonly IRegistry _registry;
-        private readonly Dictionary<string, ISourceUnit> _emittedUnits = new();
+        private readonly Dictionary<string, ISourceUnit> _cache = new(StringComparer.Ordinal);
 
-        public event Action<ISourceUnit>? BeforeEmit;
+        public event Action<ICodeInstructions>? BeforeEmit;
         public event Action<ISourceUnit>? AfterEmit;
 
-        public BuildEngine(IRegistry registry)
-        {
-            _registry = registry;
-        }
+        public BuildEngine(IRegistry registry) => _registry = registry;
 
         /// <inheritdoc/>
-        public IReadOnlyList<ISourceUnit> Build(IEnumerable<string> instructionKeys)
+        public IReadOnlyList<ISourceUnit> Build(IEnumerable<string> instructionKeys, bool includeDependencies = true)
         {
-            // Use HashSet for fast lookup and avoid duplicates
-            HashSet<string> requestedKeys = instructionKeys is HashSet<string> set ? set : new HashSet<string>(instructionKeys);
-            var sortedKeys = TopologicalSort(requestedKeys);
-
-            var results = new List<ISourceUnit>(sortedKeys.Count);
-
-            foreach (string key in sortedKeys)
+            if (instructionKeys is null)
             {
-                if (!_emittedUnits.TryGetValue(key, out ISourceUnit sourceUnit))
-                {
-                    sourceUnit = EmitInstructions(_registry.GetInstructions(key));
-                    _emittedUnits[key] = sourceUnit;
-                }
-                results.Add(sourceUnit);
+                throw new ArgumentNullException(nameof(instructionKeys));
             }
 
-            return results.ToImmutableArray();
-        }
+            var seeds = instructionKeys.ToHashSet(StringComparer.Ordinal);
+            var allKeys = includeDependencies ? ComputeTransitiveClosure(seeds) : seeds;
+            var (graph, indegree) = BuildGraph(allKeys);
+            var order = new List<string>(allKeys.Count);
+            var q = new Queue<string>(indegree.Where(kv => kv.Value == 0).Select(kv => kv.Key));
 
-        private ISourceUnit EmitInstructions(ICodeInstructions instructions)
-        {
-            // Only invoke BeforeEmit if a valid source unit is available
-            BeforeEmit?.Invoke(null!); // TODO: Replace null with real SourceUnit if available
-
-            ISourceUnit sourceUnit = instructions switch
+            while (q.Count > 0)
             {
-                IStubInstructions stub => stub.Emit(),
-                ITemplateInstructions template => template.Emit(GetEmittedStubs(template)),
-                _ => throw new InvalidOperationException($"Unsupported instruction type: {instructions.GetType().Name}")
-            };
+                var u = q.Dequeue();
+                order.Add(u);
 
-            AfterEmit?.Invoke(sourceUnit);
-            return sourceUnit;
-        }
+                if (!graph.TryGetValue(u, out var outs))
+                    continue;
 
-        private IReadOnlyList<ISourceUnit> GetEmittedStubs(ITemplateInstructions instructions)
-        {
-            // Use capacity for performance if possible
-            var stubs = new List<ISourceUnit>(instructions.Requires.Count);
-            foreach (string key in instructions.Requires)
-            {
-                if (_registry.GetInstructions(key) is IStubInstructions)
+                foreach (var v in outs)
                 {
-                    if (_emittedUnits.TryGetValue(key, out ISourceUnit stubUnit))
+                    indegree[v]--;
+
+                    if (indegree[v] == 0)
                     {
-                        stubs.Add(stubUnit);
-                    }
-                    else
-                    {
-                        // Should not occur if TopologicalSort is correct
-                        throw new InvalidOperationException($"Required stub '{key}' was not emitted.");
+                        q.Enqueue(v);
                     }
                 }
             }
-            return stubs;
+
+            if (order.Count != allKeys.Count)
+            {
+                var cyclic = string.Join(", ", indegree.Where(kv => kv.Value > 0).Select(kv => kv.Key));
+                throw new InvalidOperationException($"Cyclic dependency detected among instructions: {cyclic}");
+            }
+
+            var emitted = new List<ISourceUnit>(order.Count);
+
+            foreach (var key in order)
+            {
+                if (_cache.TryGetValue(key, out var unit))
+                {
+                    emitted.Add(unit);
+                    continue;
+                }
+
+                var instr = _registry.GetInstructions(key);
+                BeforeEmit?.Invoke(instr);
+
+                unit = instr switch
+                {
+                    IStubInstructions stub => stub.Emit(),
+                    ITemplateInstructions tpl => tpl.Emit(GetRequiredStubs(tpl)),
+                    _ => throw new InvalidOperationException($"Unsupported instruction type: {instr.GetType().Name}")
+                };
+
+                _cache[key] = unit;
+                emitted.Add(unit);
+                AfterEmit?.Invoke(unit);
+            }
+
+            return emitted.ToImmutableArray();
         }
 
-        private List<string> TopologicalSort(HashSet<string> requestedKeys)
+        private ImmutableList<ISourceUnit> GetRequiredStubs(ITemplateInstructions template)
         {
-            var visited = new HashSet<string>();
-            var sortedList = new List<string>(requestedKeys.Count);
+            var list = new List<ISourceUnit>(template.Requires.Count);
 
-            foreach (string key in requestedKeys)
+            foreach (var req in template.Requires)
             {
-                if (!visited.Contains(key))
+                var instr = _registry.GetInstructions(req);
+
+                if (instr is not IStubInstructions)
                 {
-                    SortVisit(key, visited, sortedList);
+                    throw new InvalidOperationException($"Template '{template.Key}' requires '{req}', which is not a stub.");
+                }
+
+                if (!_cache.TryGetValue(req, out var stubUnit))
+                {
+                    throw new InvalidOperationException($"Required stub '{req}' was not emitted prior to template '{template.Key}'.");
+                }
+
+                list.Add(stubUnit);
+            }
+
+            return list.ToImmutableList();
+        }
+
+        private HashSet<string> ComputeTransitiveClosure(HashSet<string> seeds)
+        {
+            var all = new HashSet<string>(seeds, StringComparer.Ordinal);
+            var stack = new Stack<string>(seeds);
+
+            while (stack.Count > 0)
+            {
+                var key = stack.Pop();
+                var instr = _registry.GetInstructions(key);
+
+                foreach (var dep in instr.Requires)
+                {
+                    if (all.Add(dep))
+                    {
+                        stack.Push(dep);
+                    }
                 }
             }
 
-            // Reverse for correct topological order
-            sortedList.Reverse();
-            return sortedList;
+            return all;
         }
 
-        private void SortVisit(string key, HashSet<string> visited, List<string> sortedList)
+        private (Dictionary<string, List<string>> graph, Dictionary<string, int> indegree) BuildGraph(HashSet<string> keys)
         {
-            if (visited.Contains(key))
-                return;
-            visited.Add(key);
+            var graph = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            var indegree = keys.ToDictionary(k => k, _ => 0, StringComparer.Ordinal);
 
-            var instructions = _registry.GetInstructions(key);
-            foreach (string requiredKey in instructions.Requires)
+            foreach (var key in keys)
             {
-                SortVisit(requiredKey, visited, sortedList);
+                var instr = _registry.GetInstructions(key);
+
+                foreach (var dep in instr.Requires)
+                {
+                    if (!keys.Contains(dep))
+                        continue;
+
+                    if (!graph.TryGetValue(dep, out var outs))
+                    {
+                        graph[dep] = outs = new List<string>();
+                    }
+
+                    outs.Add(key);
+                    indegree[key] = indegree[key] + 1;
+                }
             }
-            sortedList.Add(key);
+
+            return (graph, indegree);
         }
     }
 }

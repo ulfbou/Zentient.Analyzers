@@ -2,7 +2,9 @@
 // Copyright (c) 2025 Ulf Bourelius. All rights reserved. MIT License. See LICENSE in the project root for license information.
 // </copyright>
 
+
 using Zentient.Analyzers.Abstractions;
+using Zentient.Analyzers.Registry.Contexts;
 
 namespace Zentient.Analyzers.Registry
 {
@@ -17,7 +19,7 @@ namespace Zentient.Analyzers.Registry
     internal sealed record StubInstructions(
         string Key,
         string Domain,
-        string[] Requires,
+        IReadOnlyList<string> Requires,
         StubMode Mode,
         Func<IStubContext, ISourceUnit> Emitter) : IStubInstructions
     {

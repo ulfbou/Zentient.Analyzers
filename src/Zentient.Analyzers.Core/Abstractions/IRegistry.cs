@@ -12,28 +12,20 @@ namespace Zentient.Analyzers.Abstractions
     /// </summary>
     public interface IRegistry
     {
-        /// <summary>
-        /// Gets all registered instruction keys.
-        /// </summary>
+        /// <summary>Gets all registered instruction keys.</summary>
         IReadOnlyCollection<string> Keys { get; }
 
-        /// <summary>
-        /// Gets stub instructions by key.
-        /// </summary>
+        /// <summary>Gets stub instructions by key.</summary>
         /// <param name="key">The stub key.</param>
         /// <returns>The stub instructions.</returns>
         IStubInstructions GetStub(string key);
 
-        /// <summary>
-        /// Gets template instructions by key.
-        /// </summary>
+        /// <summary>Gets template instructions by key.</summary>
         /// <param name="key">The template key.</param>
         /// <returns>The template instructions.</returns>
         ITemplateInstructions GetTemplate(string key);
 
-        /// <summary>
-        /// Gets code instructions by key.
-        /// </summary>
+        /// <summary>Gets code instructions by key.</summary>
         /// <param name="key">The instruction key.</param>
         /// <returns>The code instructions.</returns>
         ICodeInstructions GetInstructions(string key);

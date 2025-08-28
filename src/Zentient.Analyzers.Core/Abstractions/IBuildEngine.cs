@@ -2,28 +2,36 @@
 // Copyright (c) 2025 Ulf Bourelius. All rights reserved. MIT License. See LICENSE in the project root for license information.
 // </copyright>
 
+using System.Collections.Immutable;
+
 namespace Zentient.Analyzers.Abstractions
 {
     /// <summary>
-    /// Defines the build engine responsible for generating source units from provided seeds.
+    /// Defines the build engine responsible for emitting <see cref="ISourceUnit"/>s
+    /// from registered <see cref="ICodeInstructions"/> seeds.
     /// </summary>
     public interface IBuildEngine
     {
         /// <summary>
-        /// Occurs after a source unit has been emitted.
+        /// Raised immediately before emitting a source unit for the given instructions.
+        /// Provides the <see cref="ICodeInstructions"/> that will be used to emit.
+        /// </summary>
+        event Action<ICodeInstructions>? BeforeEmit;
+
+        /// <summary>
+        /// Raised after a source unit has been emitted.
+        /// Provides the concrete <see cref="ISourceUnit"/> that was produced.
         /// </summary>
         event Action<ISourceUnit>? AfterEmit;
 
-        /// <summary>
-        /// Occurs before a source unit is emitted.
-        /// </summary>
-        event Action<ISourceUnit>? BeforeEmit;
-
-        /// <summary>
-        /// Builds source units from the specified seeds.
-        /// </summary>
-        /// <param name="instructionKeys">The collection of seed keys to build from.</param>
-        /// <returns>A read-only list of generated <see cref="ISourceUnit"/> instances.</returns>
-        IReadOnlyList<ISourceUnit> Build(IEnumerable<string> instructionKeys);
+        /// <summary>Builds source units from the specified seed keys.</summary>
+        /// <param name="instructionKeys">The seed instruction keys to build from.</param>
+        /// <param name="includeDependencies">
+        /// If true (default), also emit all transitive dependencies of the seeds; if false, only the seeds are emitted.
+        /// </param>
+        /// <returns>
+        /// A read-only list of all emitted <see cref="ISourceUnit"/> instances in a valid topological order.
+        /// </returns>
+        IReadOnlyList<ISourceUnit> Build(IEnumerable<string> instructionKeys, bool includeDependencies = true);
     }
 }
