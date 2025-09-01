@@ -13,7 +13,7 @@
     <!-- Repository information -->
     <RepositoryUrl>https://github.com/ulfbou/Zentient.Analyzers.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryBranch>main</RepositoryBranch>
+    <RepositoryBranch Condition="'$(RepositoryBranch)' == ''">main</RepositoryBranch>
     
     <!-- Build configuration -->
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
